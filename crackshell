@@ -6,14 +6,6 @@ class sheelboard:
     user_name=getpass.getuser()
     device_name=socket.gethostname()
     sys_platform=[sys.platform,sys.version]
-    help_text={
-        'attack':'攻击',
-        'exec':'执行命令',
-        'help':'显示内容',
-        'ls':'列出目录下的内容',
-        'ver':'显示shell版本',
-        'exit':'退出',
-    }
     history_list=[]
     count_of_command=1
     def __init__(self):
