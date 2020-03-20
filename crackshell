@@ -1,0 +1,110 @@
+#!/usr/bin/python3
+import os,sys,getpass,socket
+class sheelboard:
+    terminal_lines=os.get_terminal_size().lines
+    terminal_columns=os.get_terminal_size().columns
+    user_name=getpass.getuser()
+    device_name=socket.gethostname()
+    sys_platform=[sys.platform,sys.version]
+    help_text={
+        'attack':'攻击',
+        'exec':'执行命令',
+        'help':'显示内容',
+        'ls':'列出目录下的内容',
+        'ver':'显示shell版本',
+        'exit':'退出',
+    }
+    history_list=[]
+    count_of_command=1
+    def __init__(self):
+        pass
+    def _input(self):
+        if self.user_name=='root':
+            print(' '*(self.terminal_columns-len(self.user_name))+'\033[5;31;40m'+self.user_name+'\033[0m',end='')
+        else:
+            print(' '*(self.terminal_columns-len(self.user_name))+'\033[0;30;44m'+self.user_name+'\033[0m',end='')
+        print(f'\r[{self.count_of_command}]\033[1m{os.getcwd()}\033[0m>',end='')
+        buffer=input()
+        if buffer!='':
+            self.count_of_command+=1
+            self.history_list.append(buffer)
+            #print(self.history_list)
+        return buffer.split()
+    def mainloop(self):
+        try:
+            while True:
+                self.input_handler(self._input())
+                self.terminal_lines=os.get_terminal_size().lines
+                self.terminal_columns=os.get_terminal_size().columns
+        except KeyboardInterrupt:
+            pass
+        except EOFError:
+            pass
+    def input_handler(self,buffer):
+        if len(buffer)>=1:
+            if buffer[0]=='ver':
+                print(f'别惹我，这个shell很蛋疼\ncrackshell V1 on {self.sys_platform[0]}')
+            elif buffer[0]=='ls':
+                if len(buffer)>=2:
+                    print(self.getdir(buffer[1]))
+                else:
+                    print(self.getdir('./'))
+            elif buffer[0]=='cd':
+                if len(buffer)>=2:
+                    self.changedir(buffer[1])
+                else:
+                    self.changedir(f'/home/{self.user_name}')
+            elif buffer[0]=='exit':
+                sys.exit(1)
+            elif buffer[0]=='hst':
+                if len(buffer)>=2:
+                    try:
+                        self.input_handler(self.history_list[int(buffer[1])-1].split())
+                    except:
+                        print('无法调用历史记录')
+                else:
+                    print('请给出历史记录的序号')
+                    i=0
+                    try:
+                        for content in self.history_list:
+                            i+=1
+                            print(f'[{i}] '+content)
+                    except:
+                        pass
+            else:
+                print(f'系统返回值:{self.execute(buffer)}')
+    def execute(self,command_args):
+        _command=''
+        for x in range(0,len(command_args)):
+            _command+=command_args[x]
+            _command+=' '
+        return os.system(_command)
+    
+    def changedir(self,dirname):
+        try:
+            os.chdir(dirname)
+        except FileNotFoundError:
+            print('无法找到目录')
+        except PermissionError:
+            print('权限不允许')
+            
+    def getdir(self,dirname):
+        content=''
+        try:
+            dirs=os.listdir(dirname)
+            for x in dirs:
+                content+=x
+                content+='\n'
+            return content
+        except FileNotFoundError:
+            print('无此目录')
+        except PermissionError:
+            print('权限不允许')
+
+
+if __name__ == "__main__":
+    print('启动shell中...\r',end='')
+    if getpass.getuser()=='root':
+        print("\033[1;31;40m请不要用root用户使用这个shell，这很危险!\033[0m")
+    terminal=sheelboard()
+    terminal.mainloop()
